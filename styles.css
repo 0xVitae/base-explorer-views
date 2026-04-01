@@ -1,0 +1,65 @@
+/* Base Explorer Views */
+
+.bev-children {
+  display: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.bev-children.bev-expanded {
+  display: block;
+}
+
+.bev-view-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 4px 4px 40px;
+  cursor: pointer;
+  font-size: var(--nav-item-size);
+  color: var(--nav-item-color);
+  border-radius: var(--radius-s);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bev-view-item:hover {
+  background: var(--nav-item-background-hover);
+  color: var(--nav-item-color-hover);
+}
+
+.bev-view-item.bev-active {
+  background: var(--nav-item-background-active);
+  color: var(--nav-item-color-active);
+  font-weight: var(--nav-item-weight-active);
+}
+
+.bev-view-item .bev-view-icon {
+  margin-right: 6px;
+  color: var(--icon-color);
+  opacity: var(--icon-opacity);
+  flex-shrink: 0;
+}
+
+.bev-view-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Chevron */
+.nav-file-title .bev-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  color: var(--nav-collapse-icon-color);
+  transition: transform 100ms ease;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+.bev-chevron.bev-chevron-open {
+  transform: rotate(90deg);
+}

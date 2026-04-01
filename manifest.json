@@ -1,0 +1,9 @@
+{
+  "id": "base-explorer-views",
+  "name": "Base Explorer Views",
+  "version": "0.1.0",
+  "minAppVersion": "1.10.0",
+  "description": "Show Base views as expandable children in the file explorer sidebar.",
+  "author": "0xVitae",
+  "isDesktopOnly": true
+}
