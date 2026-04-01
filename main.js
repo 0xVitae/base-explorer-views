@@ -369,6 +369,18 @@ class BaseExplorerViewsPlugin extends Plugin {
 
   async openBaseFile(basePath) {
     await this.app.workspace.openLinkText(basePath, "", false);
+    await this.sleep(500);
+
+    // Open the views dropdown so the user can click "New view"
+    const leaf = this.findBaseLeaf(basePath);
+    if (!leaf) return;
+    const containerEl = leaf.view?.containerEl;
+    if (!containerEl) return;
+
+    const dropdownEl = containerEl.querySelector(SEL_VIEWS_MENU);
+    if (!dropdownEl) return;
+
+    simulateClick(getClickableChild(dropdownEl));
   }
 
   escapeHtml(str) {
