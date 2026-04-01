@@ -247,7 +247,7 @@ class BaseExplorerViewsPlugin extends Plugin {
   }
 
   async editView(basePath, viewName) {
-    // Open the base, switch to the view, then pop the dropdown so user can hit settings
+    // Open the base, switch to the view, then pop the dropdown and open the view's submenu
     await this.openBaseView(basePath, viewName);
     await this.sleep(800);
 
@@ -259,6 +259,34 @@ class BaseExplorerViewsPlugin extends Plugin {
     const dropdownEl = containerEl.querySelector(SEL_VIEWS_MENU);
     if (!dropdownEl) return;
     simulateClick(getClickableChild(dropdownEl));
+
+    // Wait for menu, then find the view row and click its submenu arrow
+    const menuCountBefore = document.querySelectorAll(SEL_MENU).length;
+    const menu = await this.waitForMenu(menuCountBefore);
+    if (!menu) return;
+
+    const menuItem = this.findMenuItem(menu, viewName);
+    if (!menuItem) return;
+
+    // Look for the submenu indicator (chevron/arrow) and hover or click the item
+    // The > arrow appears on hover — simulate a pointer move then click
+    const submenuIcon = menuItem.querySelector(".menu-item-icon:last-child, .menu-item-submenu-indicator, svg:last-child");
+    if (submenuIcon) {
+      simulateClick(submenuIcon);
+    } else {
+      // Hover the item to trigger submenu, then click the arrow area
+      const rect = menuItem.getBoundingClientRect();
+      const rightEdge = { x: rect.right - 10, y: rect.top + rect.height / 2 };
+      dispatchPointerEvent(menuItem, "pointerenter", rightEdge);
+      dispatchPointerEvent(menuItem, "mouseover", rightEdge);
+      await this.sleep(300);
+      // Click the right side where the > arrow is
+      dispatchPointerEvent(menuItem, "pointerdown", rightEdge);
+      dispatchPointerEvent(menuItem, "mousedown", rightEdge);
+      dispatchPointerEvent(menuItem, "pointerup", rightEdge);
+      dispatchPointerEvent(menuItem, "mouseup", rightEdge);
+      dispatchPointerEvent(menuItem, "click", rightEdge);
+    }
   }
 
   async duplicateView(basePath, viewName) {
