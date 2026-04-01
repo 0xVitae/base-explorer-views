@@ -224,9 +224,9 @@ class BaseExplorerViewsPlugin extends Plugin {
     const menu = new Menu();
 
     menu.addItem((item) => {
-      item.setTitle("Open view");
-      item.setIcon("arrow-right");
-      item.onClick(() => this.openBaseView(basePath, viewName));
+      item.setTitle("Edit view");
+      item.setIcon("pencil");
+      item.onClick(() => this.editView(basePath, viewName));
     });
 
     menu.addItem((item) => {
@@ -244,6 +244,21 @@ class BaseExplorerViewsPlugin extends Plugin {
     });
 
     menu.showAtMouseEvent(event);
+  }
+
+  async editView(basePath, viewName) {
+    // Open the base, switch to the view, then pop the dropdown so user can hit settings
+    await this.openBaseView(basePath, viewName);
+    await this.sleep(800);
+
+    const leaf = this.findBaseLeaf(basePath);
+    if (!leaf) return;
+    const containerEl = leaf.view?.containerEl;
+    if (!containerEl) return;
+
+    const dropdownEl = containerEl.querySelector(SEL_VIEWS_MENU);
+    if (!dropdownEl) return;
+    simulateClick(getClickableChild(dropdownEl));
   }
 
   async duplicateView(basePath, viewName) {
