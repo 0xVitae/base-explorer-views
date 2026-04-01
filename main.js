@@ -1,5 +1,5 @@
 // Base Explorer Views — show .base file views in the file explorer sidebar
-const { Plugin, parseYaml } = require("obsidian");
+const { Plugin, parseYaml, Menu, Notice } = require("obsidian");
 
 const CHEVRON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
 const VIEW_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>`;
@@ -212,7 +212,94 @@ class BaseExplorerViewsPlugin extends Plugin {
       e.preventDefault();
       this.openBaseView(basePath, viewName);
     });
+    el.addEventListener("contextmenu", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      this.showViewContextMenu(e, basePath, viewName);
+    });
     return el;
+  }
+
+  showViewContextMenu(event, basePath, viewName) {
+    const menu = new Menu();
+
+    menu.addItem((item) => {
+      item.setTitle("Edit view");
+      item.setIcon("pencil");
+      item.onClick(() => this.editView(basePath, viewName));
+    });
+
+    menu.addItem((item) => {
+      item.setTitle("Duplicate view");
+      item.setIcon("copy");
+      item.onClick(() => this.duplicateView(basePath, viewName));
+    });
+
+    menu.addSeparator();
+
+    menu.addItem((item) => {
+      item.setTitle("Delete view");
+      item.setIcon("trash");
+      item.onClick(() => this.deleteView(basePath, viewName));
+    });
+
+    menu.showAtMouseEvent(event);
+  }
+
+  async editView(basePath, viewName) {
+    // Open the base, switch to the view, then open its settings
+    await this.openBaseView(basePath, viewName);
+  }
+
+  async duplicateView(basePath, viewName) {
+    try {
+      const file = this.app.vault.getAbstractFileByPath(basePath);
+      if (!file) return;
+      const content = await this.app.vault.read(file);
+      const parsed = parseYaml(content);
+      if (!parsed?.views) return;
+
+      const sourceView = parsed.views.find((v) => v.name === viewName);
+      if (!sourceView) return;
+
+      const copy = JSON.parse(JSON.stringify(sourceView));
+      copy.name = `${viewName} (copy)`;
+      delete copy.id;
+      parsed.views.push(copy);
+
+      // Rebuild YAML manually to preserve structure
+      const { stringifyYaml } = require("obsidian");
+      await this.app.vault.modify(file, stringifyYaml(parsed));
+      new Notice(`Duplicated "${viewName}"`);
+    } catch (e) {
+      new Notice(`Failed to duplicate view: ${e.message}`);
+    }
+  }
+
+  async deleteView(basePath, viewName) {
+    try {
+      const file = this.app.vault.getAbstractFileByPath(basePath);
+      if (!file) return;
+      const content = await this.app.vault.read(file);
+      const parsed = parseYaml(content);
+      if (!parsed?.views) return;
+
+      const idx = parsed.views.findIndex((v) => v.name === viewName);
+      if (idx === -1) return;
+
+      if (parsed.views.length <= 1) {
+        new Notice("Can't delete the only view");
+        return;
+      }
+
+      parsed.views.splice(idx, 1);
+
+      const { stringifyYaml } = require("obsidian");
+      await this.app.vault.modify(file, stringifyYaml(parsed));
+      new Notice(`Deleted "${viewName}"`);
+    } catch (e) {
+      new Notice(`Failed to delete view: ${e.message}`);
+    }
   }
 
   // --- View switching (uses pointer simulation like base-views plugin) ---
