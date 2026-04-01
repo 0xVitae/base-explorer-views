@@ -224,9 +224,9 @@ class BaseExplorerViewsPlugin extends Plugin {
     const menu = new Menu();
 
     menu.addItem((item) => {
-      item.setTitle("Edit view");
-      item.setIcon("pencil");
-      item.onClick(() => this.editView(basePath, viewName));
+      item.setTitle("Open view");
+      item.setIcon("arrow-right");
+      item.onClick(() => this.openBaseView(basePath, viewName));
     });
 
     menu.addItem((item) => {
@@ -244,11 +244,6 @@ class BaseExplorerViewsPlugin extends Plugin {
     });
 
     menu.showAtMouseEvent(event);
-  }
-
-  async editView(basePath, viewName) {
-    // Open the base, switch to the view, then open its settings
-    await this.openBaseView(basePath, viewName);
   }
 
   async duplicateView(basePath, viewName) {
